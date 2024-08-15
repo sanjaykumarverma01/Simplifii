@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import register from "../assets/svg/register.svg";
 import logo from "../assets/images/logo.png";
 import {
@@ -10,34 +10,79 @@ import {
   Box,
   Snackbar,
   Alert,
+  Button,
 } from "@mui/material";
 import { MdClear } from "react-icons/md";
 import LoadingButton from "@mui/lab/LoadingButton";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+import axios from "axios";
 const Registration = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const [nameTitle, setNameTitle] = useState("");
-  const [isd, setIsd] = useState("");
+  const [countryIsd, setCountryIsd] = useState([]);
   const [otpSend, setOtpSend] = useState(false);
   const [otp, setOtp] = useState("");
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [timer, setTimer] = useState(600); // 10 minutes in seconds
+
   const [loading, setLoading] = useState(false);
 
   const otpRef = useRef(null);
 
   const [registerData, setRegisterData] = useState({
-    name: "Sanjay",
-    email: "vermasanjaykumar97@gmail.com",
-    mobileNo: "8169863919",
+    title: "",
+    name: "",
+    email: "",
+    mobileNo: "",
+    countryCode: "",
   });
+
+  useEffect(() => {
+    fetch("https://restcountries.com/v3.1/all")
+      .then((response) => response.json())
+      .then((data) => {
+        const countries = data.map((country) => ({
+          name: country.name.common,
+          code:
+            country.idd.root +
+            (country.idd.suffixes ? country.idd.suffixes[0] : ""),
+        }));
+        const sortedCountryIsd = [...countries].sort((a, b) => {
+          if (a.name === "India") return -1; // Place India on top
+          if (b.name === "India") return 1;
+          return a.name.localeCompare(b.name); // Alphabetical order for others
+        });
+        setCountryIsd(sortedCountryIsd);
+      })
+      .catch((error) => console.error("Error fetching ISD codes:", error));
+  }, []);
 
   useEffect(() => {
     if (otpSend) {
       otpRef.current.focus(); // Automatically focus the TextField when otp is true
     }
   }, [otpSend]);
+
+  useEffect(() => {
+    let intervalId = null;
+    if (resendDisabled) {
+      intervalId = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(intervalId);
+            setResendDisabled(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(intervalId); // Clean up the interval on component unmount
+  }, [resendDisabled]);
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -46,25 +91,76 @@ const Registration = () => {
     setOpen(false);
   };
 
-  const handleRegister = (e) => {
+  const handleRegisterAndGetOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setOtpSend(true);
-      setLoading(false);
-    }, 5000);
+    try {
+      const { data } = await axios.post("http://localhost:8080/api/user/", {
+        ...registerData,
+      });
+      if (data) {
+        toast.success(data?.message);
+        setOtpSend(true);
+        setResendDisabled(true);
+      } else {
+        toast.error("Failed to send OTP");
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+    setLoading(false);
   };
 
-  const handleSubmitOtp = (e) => {
+  const verifyOtpAndCompleteReg = async (e) => {
     e.preventDefault();
-    console.log("OTP submitted:", otp);
+    setLoading(true);
+    try {
+      const { data } = await axios.post(
+        "http://localhost:8080/api/user/verify-otp",
+        {
+          ...registerData,
+          otp,
+        }
+      );
+      toast.success(data?.message);
+      setOtpSend(false);
+      setResendDisabled(false);
+      navigate("/home");
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+    setLoading(false);
+  };
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes} min ${secs} sec`;
+  };
+
+  const handleResendOtp = async () => {
+    // Reset the timer
+    setTimer(600);
+    setResendDisabled(true);
+    try {
+      const { data } = await axios.post("http://localhost:8080/api/user/", {
+        ...registerData,
+      });
+      if (data) {
+        toast.success(data?.message);
+        setOtpSend(true);
+      } else {
+        toast.error("Failed to send OTP");
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+    setLoading(false);
   };
 
   const handleInput = (name, value) => {
     setRegisterData((prev) => ({ ...prev, [name]: value }));
   };
-
-  const clearField = (setFunction) => () => setFunction("");
 
   const commonTextFieldProps = {
     size: "small",
@@ -97,8 +193,10 @@ const Registration = () => {
       <Box id="rightBox">
         <img src={logo} alt="logo" />
         <Typography>Register as an expert</Typography>
-
-        <form onSubmit={otpSend ? handleSubmitOtp : handleRegister}>
+        <ToastContainer />
+        <form
+          onSubmit={otpSend ? verifyOtpAndCompleteReg : handleRegisterAndGetOtp}
+        >
           <Box
             sx={{
               display: "flex",
@@ -112,12 +210,15 @@ const Registration = () => {
               {...commonTextFieldProps}
               select
               label="Mr/Mrs"
-              value={nameTitle}
-              onChange={(e) => setNameTitle(e.target.value)}
+              value={registerData.title}
+              onChange={(e) => handleInput("title", e.target.value)}
               InputProps={{
-                endAdornment: nameTitle && (
+                endAdornment: registerData.title && (
                   <InputAdornment position="end">
-                    <IconButton onClick={clearField(setNameTitle)}>
+                    <IconButton
+                      onClick={() => handleInput("title", "")}
+                      disabled={otpSend}
+                    >
                       <MdClear />
                     </IconButton>
                   </InputAdornment>
@@ -126,13 +227,13 @@ const Registration = () => {
               sx={{
                 ...commonTextFieldProps.sx,
                 "& .MuiInputLabel-root.Mui-focused": {
-                  color: nameTitle ? "black" : "#EC9324",
+                  color: registerData.title ? "black" : "#EC9324",
                 },
                 width: "30%",
               }}
             >
-              {["Mr", "Mrs", "Miss", "Dr", "Ms", "Prof"].map((title) => (
-                <MenuItem key={title} value={title}>
+              {["Mr", "Mrs", "Miss", "Dr", "Ms", "Prof"].map((title, i) => (
+                <MenuItem key={i} value={title}>
                   {title}.
                 </MenuItem>
               ))}
@@ -166,12 +267,35 @@ const Registration = () => {
               {...commonTextFieldProps}
               select
               label="ISD"
-              value={isd}
-              onChange={(e) => setIsd(e.target.value)}
+              value={registerData.countryCode}
+              onChange={(e) => handleInput("countryCode", e.target.value)}
+              SelectProps={{
+                MenuProps: {
+                  sx: {
+                    "& .MuiPaper-root": {
+                      position: "absolute",
+                      left: 0, // Align dropdown with the left edge of the TextField
+                      transform: "translateY(10px) translateX(0px)", // Adjust position as needed
+                      width: "10%", // Match dropdown width with TextField
+                      height: "40vh",
+                      zIndex: 1300, // Ensure dropdown appears above other content
+                    },
+                  },
+                },
+                renderValue: (selected) => {
+                  const selectedCountry = countryIsd.find(
+                    (country) => country.code === selected
+                  );
+                  return selectedCountry ? `${selectedCountry.code}` : "";
+                },
+              }}
               InputProps={{
-                endAdornment: isd && (
+                endAdornment: registerData.countryCode && (
                   <InputAdornment position="end">
-                    <IconButton onClick={clearField(setIsd)}>
+                    <IconButton
+                      onClick={() => handleInput("countryCode", "")}
+                      disabled={otpSend}
+                    >
                       <MdClear />
                     </IconButton>
                   </InputAdornment>
@@ -180,14 +304,20 @@ const Registration = () => {
               sx={{
                 ...commonTextFieldProps.sx,
                 "& .MuiInputLabel-root.Mui-focused": {
-                  color: isd ? "black" : "#EC9324",
+                  color: registerData.countryCode ? "black" : "#EC9324",
                 },
                 width: "30%",
+                "& .MuiSelect-select": {
+                  paddingRight: registerData.countryCode ? "32px" : "16px",
+                },
               }}
             >
-              {/* Replace these with actual ISD codes */}
-              <MenuItem value="Mr">Mr.</MenuItem>
-              <MenuItem value="Mrs">Mrs.</MenuItem>
+              {countryIsd &&
+                countryIsd.map((country, i) => (
+                  <MenuItem key={i} value={country.code}>
+                    {`${country.name} (${country.code})`}
+                  </MenuItem>
+                ))}
             </TextField>
 
             <TextField
@@ -238,10 +368,41 @@ const Registration = () => {
                   width: "100%",
                 }}
               />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginTop: "10px",
+                }}
+              >
+                {resendDisabled ? (
+                  <Typography sx={{ color: "gray", marginLeft: "55%" }}>
+                    Resend OTP in {formatTime(timer)}
+                  </Typography>
+                ) : (
+                  <Button
+                    size="small"
+                    onClick={handleResendOtp}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "15px",
+                      fontWeight: "500",
+                      marginLeft: "80%",
+                      backgroundColor: "transparent",
+                      "&:hover": {
+                        backgroundColor: "transparent",
+                      },
+                      color: "gray",
+                    }}
+                  >
+                    Resend OTP
+                  </Button>
+                )}
+              </Box>
             </Box>
           )}
 
-          <Box sx={{ width: "67%", margin: "30px auto" }}>
+          <Box sx={{ width: "67%", margin: "20px auto" }}>
             <LoadingButton
               variant="contained"
               sx={{
@@ -285,7 +446,7 @@ const Registration = () => {
           open={open}
           autoHideDuration={3000}
           onClose={handleClose}
-          anchorOrigin={{ vertical: "center", horizontal: "center" }} // Position of the toast
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
           <Alert onClose={handleClose} severity="info" sx={{ width: "100%" }}>
             Login page is under development!!!
