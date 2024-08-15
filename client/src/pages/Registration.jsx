@@ -35,9 +35,13 @@ const Registration = () => {
   const [nameError, setNameError] = useState(false);
   const [mobileNoError, setMobileNoError] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [otpError, setOtpError] = useState(false);
+
   const [emailHelperText, setEmailHelperText] = useState("");
   const [mobileHelperText, setMobileHelperText] = useState("");
   const [nameHelperText, setNameHelperText] = useState("");
+  const [otpHelperText, setOtpHelperText] = useState("");
+
   const otpRef = useRef(null);
 
   const [registerData, setRegisterData] = useState({
@@ -186,6 +190,17 @@ const Registration = () => {
     return value;
   };
 
+  const handleOtp = (e) => {
+    let value = e.target.value;
+    if (value !== "") {
+      validateOtpError(value);
+    }
+    value = validateOtp(value);
+
+    setOtp(value);
+    return value;
+  };
+
   function validateNameError(name) {
     const nameRegex = /^(?!\s)(?=.{1,60}$)[a-zA-Z\s]+$/;
     setNameError(!nameRegex.test(name));
@@ -213,6 +228,16 @@ const Registration = () => {
       setMobileHelperText("enter correct mobile number");
     } else {
       setMobileHelperText("");
+    }
+  }
+
+  function validateOtpError(number) {
+    const numberRegex = /^[0-9]{5}$/;
+    setOtpError(!numberRegex.test(number));
+    if (otpError) {
+      setOtpHelperText("OTP should be 6 digit");
+    } else {
+      setOtpHelperText("");
     }
   }
 
@@ -452,7 +477,7 @@ const Registration = () => {
                 type="number"
                 value={otp}
                 inputRef={otpRef}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={handleOtp}
                 sx={{
                   ...commonTextFieldProps.sx,
                   "& .MuiInputLabel-root.Mui-focused": {
@@ -460,6 +485,23 @@ const Registration = () => {
                   },
                   width: "100%",
                 }}
+                error={otpError}
+                helperText={
+                  otpHelperText && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "red",
+                      }}
+                    >
+                      <ErrorOutlineOutlinedIcon
+                        sx={{ fontSize: "15px", marginRight: "4px" }}
+                      />
+                      {otpHelperText}
+                    </Box>
+                  )
+                }
               />
               <Box
                 sx={{
@@ -562,3 +604,5 @@ export const validateName = (value) =>
     .trimStart()
     .replace(/[^a-zA-Z\s]/g, "")
     .replace("  ", " ");
+
+export const validateOtp = (value) => value.replace(/[^0-9]/g, "");
