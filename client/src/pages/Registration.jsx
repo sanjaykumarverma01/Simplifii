@@ -106,7 +106,7 @@ const Registration = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post("http://localhost:8080/api/user/", {
+      const { data } = await axios.post("api/user/", {
         ...registerData,
       });
       if (data) {
@@ -126,17 +126,17 @@ const Registration = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post(
-        "http://localhost:8080/api/user/verify-otp",
-        {
-          ...registerData,
-          otp,
-        }
-      );
+      const { data } = await axios.post("api/user/verify-otp", {
+        ...registerData,
+        otp,
+      });
+      console.log(data)
       toast.success(data?.message);
+      setTimeout(() => {
+        navigate("/home");
+      }, 2000);
       setOtpSend(false);
       setResendDisabled(false);
-      navigate("/home");
     } catch (error) {
       toast.error(error.response.data.message);
     }
