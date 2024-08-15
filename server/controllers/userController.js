@@ -7,15 +7,13 @@ const emailOtp = async (req, res) => {
   const { title, name, countryCode, mobileNo, email } = req.body;
 
   if (!name || !email || !title || !countryCode || !mobileNo) {
-    res.status(400);
-    throw new Error("Please Enter all the Fields");
+    return res.status(400).json({ message: "Please Enter all the Fields" });
   }
 
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
+    return res.status(400).json({ message: "User already exists" });
   }
 
   const otp = generateOtp();
@@ -56,7 +54,9 @@ const verifyOtpRegisterUser = async (req, res) => {
     const user = new User({ title, name, countryCode, mobileNo, email });
     await user.save();
     await Otp.deleteOne({ email }).exec();
-    res.status(201).json({ message: "OTP verified and Registration successful." });
+    res
+      .status(201)
+      .json({ message: "OTP verified and Registration successful." });
   } catch (error) {
     res
       .status(500)
