@@ -17,8 +17,9 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import axios from "axios";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+
 const Registration = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -31,6 +32,12 @@ const Registration = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const [nameError, setNameError] = useState(false);
+  const [mobileNoError, setMobileNoError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [emailHelperText, setEmailHelperText] = useState("");
+  const [mobileHelperText, setMobileHelperText] = useState("");
+  const [nameHelperText, setNameHelperText] = useState("");
   const otpRef = useRef(null);
 
   const [registerData, setRegisterData] = useState({
@@ -159,8 +166,55 @@ const Registration = () => {
   };
 
   const handleInput = (name, value) => {
+    if (name === "mobileNo") {
+      if (value !== "") {
+        validateMobileNo(value);
+      }
+      value = validateMobileNumber(value);
+    }
+    if (name === "email") {
+      validateEmail(value);
+      value = validateEmailLowerCase(value);
+    }
+    if (name === "name") {
+      validateNameError(value);
+      value = validateName(value);
+    }
+
     setRegisterData((prev) => ({ ...prev, [name]: value }));
+
+    return value;
   };
+
+  function validateNameError(name) {
+    const nameRegex = /^(?!\s)(?=.{1,60}$)[a-zA-Z\s]+$/;
+    setNameError(!nameRegex.test(name));
+    if (nameError) {
+      setNameHelperText("enter correct name");
+    } else {
+      setNameHelperText("");
+    }
+  }
+  function validateEmail(email) {
+    const emailRegex =
+      /^(?=.{1,50}$)[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
+    setEmailError(!emailRegex.test(email));
+    if (emailError) {
+      setEmailHelperText("enter correct email address");
+    } else {
+      setEmailHelperText("");
+    }
+  }
+
+  function validateMobileNo(number) {
+    const mobileRegex = /^[0-9]{5,11}$/;
+    setMobileNoError(!mobileRegex.test(number));
+    if (mobileNoError) {
+      setMobileHelperText("enter correct mobile number");
+    } else {
+      setMobileHelperText("");
+    }
+  }
 
   const commonTextFieldProps = {
     size: "small",
@@ -251,6 +305,19 @@ const Registration = () => {
                 },
                 width: "65%",
               }}
+              error={nameError}
+              helperText={
+                nameHelperText && (
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", color: "red" }}
+                  >
+                    <ErrorOutlineOutlinedIcon
+                      sx={{ fontSize: "15px", marginRight: "4px" }}
+                    />
+                    {nameHelperText}
+                  </Box>
+                )
+              }
             />
           </Box>
 
@@ -332,6 +399,19 @@ const Registration = () => {
                 },
                 width: "65%",
               }}
+              error={mobileNoError}
+              helperText={
+                mobileHelperText && (
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", color: "red" }}
+                  >
+                    <ErrorOutlineOutlinedIcon
+                      sx={{ fontSize: "15px", marginRight: "4px" }}
+                    />
+                    {mobileHelperText}
+                  </Box>
+                )
+              }
             />
           </Box>
 
@@ -348,6 +428,19 @@ const Registration = () => {
                 },
                 width: "100%",
               }}
+              error={emailError}
+              helperText={
+                emailHelperText && (
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", color: "red" }}
+                  >
+                    <ErrorOutlineOutlinedIcon
+                      sx={{ fontSize: "15px", marginRight: "4px" }}
+                    />
+                    {emailHelperText}
+                  </Box>
+                )
+              }
             />
           </Box>
 
@@ -458,3 +551,14 @@ const Registration = () => {
 };
 
 export default Registration;
+
+export const validateEmailLowerCase = (value) =>
+  value.trimStart().toLowerCase().replace(" ", "");
+
+export const validateMobileNumber = (value) => value.replace(/[^0-9]/g, "");
+
+export const validateName = (value) =>
+  value
+    .trimStart()
+    .replace(/[^a-zA-Z\s]/g, "")
+    .replace("  ", " ");
