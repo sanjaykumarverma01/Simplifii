@@ -15,7 +15,7 @@ Infollion-Register-Page is a full-stack app that uses real-time OTP verification
 
 [https://infollion-nlou.onrender.com/](https://infollion-nlou.onrender.com/)
 
-![](https://github.com/sanjaykumarverma01/simplifii/blob/main/Screenshots/InvalidOtp.png)
+![](https://github.com/sanjaykumarverma01/simplifii/blob/main/Screenshots/landing_page.png)
 ## Run Locally
 
 Clone the project
