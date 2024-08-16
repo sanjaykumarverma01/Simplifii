@@ -69,4 +69,6 @@ Start the Client
 ![](https://github.com/sanjaykumarverma01/simplifii/blob/main/Screenshots/existingUser.png)
 ### OTP Expire Validation
 ![](https://github.com/sanjaykumarverma01/simplifii/blob/main/Screenshots/otpExpire.png)
+### Mobile View
+![](https://github.com/sanjaykumarverma01/simplifii/blob/main/Screenshots/Mobile%20View.png)
 
