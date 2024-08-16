@@ -28,7 +28,7 @@ const Registration = () => {
   const [otpSend, setOtpSend] = useState(false);
   const [otp, setOtp] = useState("");
   const [resendDisabled, setResendDisabled] = useState(false);
-  const [timer, setTimer] = useState(600); // 10 minutes in seconds
+  const [timer, setTimer] = useState(180); // 2 minutes in seconds
 
   const [loading, setLoading] = useState(false);
 
@@ -151,7 +151,7 @@ const Registration = () => {
 
   const handleResendOtp = async () => {
     // Reset the timer
-    setTimer(600);
+    setTimer(180);
     setResendDisabled(true);
     try {
       const { data } = await axios.post("http://localhost:8080/api/user/", {
