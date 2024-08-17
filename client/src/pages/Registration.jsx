@@ -37,11 +37,6 @@ const Registration = () => {
   const [emailError, setEmailError] = useState(false);
   const [otpError, setOtpError] = useState(false);
 
-  const [emailHelperText, setEmailHelperText] = useState("");
-  const [mobileHelperText, setMobileHelperText] = useState("");
-  const [nameHelperText, setNameHelperText] = useState("");
-  const [otpHelperText, setOtpHelperText] = useState("");
-
   const otpRef = useRef(null);
 
   const [registerData, setRegisterData] = useState({
@@ -203,41 +198,21 @@ const Registration = () => {
   function validateNameError(name) {
     const nameRegex = /^(?!\s)(?=.{1,60}$)[a-zA-Z\s]+$/;
     setNameError(!nameRegex.test(name));
-    if (nameError) {
-      setNameHelperText("enter correct name");
-    } else {
-      setNameHelperText("");
-    }
   }
   function validateEmail(email) {
     const emailRegex =
       /^(?=.{1,50}$)[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
     setEmailError(!emailRegex.test(email));
-    if (emailError) {
-      setEmailHelperText("enter correct email address");
-    } else {
-      setEmailHelperText("");
-    }
   }
 
   function validateMobileNo(number) {
-    const mobileRegex = /^[0-9]{5,11}$/;
+    const mobileRegex = /^[0-9]{6,11}$/;
     setMobileNoError(!mobileRegex.test(number));
-    if (mobileNoError) {
-      setMobileHelperText("enter correct mobile number");
-    } else {
-      setMobileHelperText("");
-    }
   }
 
   function validateOtpError(number) {
     const numberRegex = /^[0-9]{5}$/;
     setOtpError(!numberRegex.test(number));
-    if (otpError) {
-      setOtpHelperText("OTP should be 6 digit");
-    } else {
-      setOtpHelperText("");
-    }
   }
 
   const commonTextFieldProps = {
@@ -331,14 +306,14 @@ const Registration = () => {
               }}
               error={nameError}
               helperText={
-                nameHelperText && (
+                nameError && (
                   <Box
                     sx={{ display: "flex", alignItems: "center", color: "red" }}
                   >
                     <ErrorOutlineOutlinedIcon
                       sx={{ fontSize: "15px", marginRight: "4px" }}
                     />
-                    {nameHelperText}
+                    enter correct name
                   </Box>
                 )
               }
@@ -425,14 +400,14 @@ const Registration = () => {
               }}
               error={mobileNoError}
               helperText={
-                mobileHelperText && (
+                mobileNoError && (
                   <Box
                     sx={{ display: "flex", alignItems: "center", color: "red" }}
                   >
                     <ErrorOutlineOutlinedIcon
                       sx={{ fontSize: "15px", marginRight: "4px" }}
                     />
-                    {mobileHelperText}
+                    enter correct mobile number between 6-12 digit
                   </Box>
                 )
               }
@@ -454,14 +429,14 @@ const Registration = () => {
               }}
               error={emailError}
               helperText={
-                emailHelperText && (
+                emailError && (
                   <Box
                     sx={{ display: "flex", alignItems: "center", color: "red" }}
                   >
                     <ErrorOutlineOutlinedIcon
                       sx={{ fontSize: "15px", marginRight: "4px" }}
                     />
-                    {emailHelperText}
+                    enter correct email address
                   </Box>
                 )
               }
@@ -486,7 +461,7 @@ const Registration = () => {
                 }}
                 error={otpError}
                 helperText={
-                  otpHelperText && (
+                  otpError && (
                     <Box
                       sx={{
                         display: "flex",
@@ -497,7 +472,7 @@ const Registration = () => {
                       <ErrorOutlineOutlinedIcon
                         sx={{ fontSize: "15px", marginRight: "4px" }}
                       />
-                      {otpHelperText}
+                      OTP should be 6 digit
                     </Box>
                   )
                 }
