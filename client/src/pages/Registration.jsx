@@ -206,7 +206,7 @@ const Registration = () => {
   }
 
   function validateMobileNo(number) {
-    const mobileRegex = /^[0-9]{6,11}$/;
+    const mobileRegex = /^[0-9]{6,12}$/;
     setMobileNoError(!mobileRegex.test(number));
   }
 
