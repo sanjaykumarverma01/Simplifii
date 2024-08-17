@@ -130,7 +130,6 @@ const Registration = () => {
         ...registerData,
         otp,
       });
-      console.log(data)
       toast.success(data?.message);
       setTimeout(() => {
         navigate("/home");
