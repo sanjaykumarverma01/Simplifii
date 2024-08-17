@@ -533,6 +533,7 @@ const Registration = () => {
               type="submit"
               loading={loading}
               // loadingIndicator="Loading Response..."
+              disabled={nameError || mobileNoError || emailError || otpError}
             >
               {otpSend ? "Submit OTP" : "Get OTP on email"}
             </LoadingButton>
