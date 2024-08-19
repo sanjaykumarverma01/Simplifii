@@ -28,7 +28,7 @@ const Registration = () => {
   const [otpSend, setOtpSend] = useState(false);
   const [otp, setOtp] = useState("");
   const [resendDisabled, setResendDisabled] = useState(false);
-  const [timer, setTimer] = useState(180); // 2 minutes in seconds
+  const [timer, setTimer] = useState(180);
 
   const [loading, setLoading] = useState(false);
 
@@ -69,7 +69,7 @@ const Registration = () => {
 
   useEffect(() => {
     if (otpSend) {
-      otpRef.current.focus(); // Automatically focus the TextField when otp is true
+      otpRef.current.focus();
     }
   }, [otpSend]);
 
@@ -340,11 +340,11 @@ const Registration = () => {
                   sx: {
                     "& .MuiPaper-root": {
                       position: "absolute",
-                      left: 0, // Align dropdown with the left edge of the TextField
-                      transform: "translateY(10px) translateX(0px)", // Adjust position as needed
-                      width: "10%", // Match dropdown width with TextField
+                      left: 0,
+                      transform: "translateY(10px) translateX(0px)",
+                      width: "10%",
                       height: "40vh",
-                      zIndex: 1300, // Ensure dropdown appears above other content
+                      zIndex: 1300,
                     },
                   },
                 },
@@ -527,7 +527,7 @@ const Registration = () => {
                   backgroundColor: "#EC9324",
                 },
                 "&.MuiLoadingButton-loading": {
-                  backgroundColor: "#EC9324", // Ensures background color stays the same during loading
+                  backgroundColor: "#EC9324",
                 },
               }}
               type="submit"
