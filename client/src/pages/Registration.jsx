@@ -171,31 +171,46 @@ const Registration = () => {
   const verifyOtpAndCompleteReg = async (e) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const payload = {
-        action: "SelfRegister",
-        email: registerData.email,
-        otp: otp,
-      };
-      const { data } = await axios.post(
-        "https://colo-dev.infollion.com/api/v1/self-registration/verify-otp",
-        { ...payload }
-      );
-      console.log("data", data);
-      toast.success(data?.message);
+    const otpVerify = registerData?.mobileNo.slice(-6);
+    if (otpVerify === otp) {
+      toast.success("OTP Verification Success");
       setTimeout(() => {
+        setOtpSend(false);
+        setResendDisabled(false);
+        setLoading(false);
         navigate("/home");
       }, 2000);
-      setOtpSend(false);
-      setResendDisabled(false);
-    } catch (error) {
-      if (error?.response?.data?.error) {
-        toast.error(error?.response?.data?.error);
-      } else {
-        toast.error(error?.response?.data?.message);
-      }
+    } else {
+      setTimeout(() => {
+        toast.error("OTP verification failed");
+        setLoading(false);
+      }, 2000);
     }
-    setLoading(false);
+    // try {
+    //   const payload = {
+    //     action: "SelfRegister",
+    //     email: registerData.email,
+    //     otp: otp,
+    //   };
+    //   const { data } = await axios.post(
+    //     "https://colo-dev.infollion.com/api/v1/self-registration/verify-otp",
+    //     { ...payload }
+    //   );
+    //   console.log("data", data);
+    //   toast.success(data?.message);
+    //   setTimeout(() => {
+    //     navigate("/home");
+    //   }, 2000);
+    //   setOtpSend(false);
+    //   setResendDisabled(false);
+    // } catch (error) {
+    //   if (error?.response?.data?.error) {
+    //     toast.error(error?.response?.data?.error);
+    //   } else {
+    //     toast.error(error?.response?.data?.message);
+    //   }
+    // }
+    // setLoading(false)
   };
 
   const formatTime = (seconds) => {
