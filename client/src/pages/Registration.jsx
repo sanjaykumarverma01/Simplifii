@@ -97,14 +97,43 @@ const Registration = () => {
     setOpen(false);
   };
 
+  // With my api
+  // const handleRegisterAndGetOtp = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axios.post("api/user/", {
+  //       ...registerData,
+  //     });
+  //     if (data) {
+  //       toast.success(data?.message);
+  //       setOtpSend(true);
+  //       setResendDisabled(true);
+  //     } else {
+  //       toast.error("Failed to send OTP");
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.response.data.message);
+  //   }
+  //   setLoading(false);
+  // };
+
+  // With company api
   const handleRegisterAndGetOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post("api/user/", {
-        ...registerData,
-      });
-      if (data) {
+      const payload = {
+        email: registerData.email,
+        mobile: registerData.mobileNo,
+        name: registerData.name,
+        salutation: registerData.title,
+      };
+      const { data } = await axios.post(
+        "https://colo-dev.infollion.com/api/v1/self-registration/register",
+        payload
+      );
+      if (data?.success) {
         toast.success(data?.message);
         setOtpSend(true);
         setResendDisabled(true);
@@ -117,14 +146,42 @@ const Registration = () => {
     setLoading(false);
   };
 
+  // own API
+  // const verifyOtpAndCompleteReg = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axios.post("api/user/verify-otp", {
+  //       ...registerData,
+  //       otp,
+  //     });
+  //     toast.success(data?.message);
+  //     setTimeout(() => {
+  //       navigate("/home");
+  //     }, 2000);
+  //     setOtpSend(false);
+  //     setResendDisabled(false);
+  //   } catch (error) {
+  //     toast.error(error.response.data.message);
+  //   }
+  //   setLoading(false);
+  // };
+
+  //Company Api
   const verifyOtpAndCompleteReg = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post("api/user/verify-otp", {
-        ...registerData,
-        otp,
-      });
+      const payload = {
+        action: "SelfRegister",
+        email: registerData.email,
+        otp: otp,
+      };
+      const { data } = await axios.post(
+        "https://colo-dev.infollion.com/api/v1/self-registration/verify-otp",
+        { ...payload }
+      );
+      console.log("data", data);
       toast.success(data?.message);
       setTimeout(() => {
         navigate("/home");
@@ -132,7 +189,11 @@ const Registration = () => {
       setOtpSend(false);
       setResendDisabled(false);
     } catch (error) {
-      toast.error(error.response.data.message);
+      if (error?.response?.data?.error) {
+        toast.error(error?.response?.data?.error);
+      } else {
+        toast.error(error?.response?.data?.message);
+      }
     }
     setLoading(false);
   };
@@ -143,24 +204,53 @@ const Registration = () => {
     return `${minutes} min ${secs} sec`;
   };
 
+  // own api
+  // const handleResendOtp = async () => {
+  //   // Reset the timer
+  //   setTimer(180);
+  //   setResendDisabled(true);
+  //   try {
+  //     const { data } = await axios.post("api/user/", {
+  //       ...registerData,
+  //     });
+  //     if (data) {
+  //       toast.success(data?.message);
+  //       setOtpSend(true);
+  //     } else {
+  //       toast.error("Failed to send OTP");
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.response.data.message);
+  //   }
+  //   setLoading(false);
+  // };
+
+  // company api
   const handleResendOtp = async () => {
     // Reset the timer
     setTimer(180);
     setResendDisabled(true);
     try {
-      const { data } = await axios.post("http://localhost:8080/api/user/", {
-        ...registerData,
-      });
-      if (data) {
+      const payload = {
+        email: registerData.email,
+        mobile: registerData.mobileNo,
+        name: registerData.name,
+        salutation: registerData.title,
+      };
+      const { data } = await axios.post(
+        "https://colo-dev.infollion.com/api/v1/self-registration/register",
+        { ...payload }
+      );
+      if (data?.success) {
         toast.success(data?.message);
         setOtpSend(true);
+        setResendDisabled(true);
       } else {
         toast.error("Failed to send OTP");
       }
     } catch (error) {
       toast.error(error.response.data.message);
     }
-    setLoading(false);
   };
 
   const handleInput = (name, value) => {
@@ -211,7 +301,7 @@ const Registration = () => {
   }
 
   function validateOtpError(number) {
-    const numberRegex = /^[0-9]{5}$/;
+    const numberRegex = /^[0-9]{6}$/;
     setOtpError(!numberRegex.test(number));
   }
 
@@ -528,6 +618,9 @@ const Registration = () => {
                 },
                 "&.MuiLoadingButton-loading": {
                   backgroundColor: "#EC9324",
+                },
+                "&.MuiLoadingButton-loading .MuiCircularProgress-root": {
+                  color: "white",
                 },
               }}
               type="submit"
