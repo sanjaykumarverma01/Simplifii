@@ -1,7 +1,9 @@
 # The app may take 2-3 minutes to load initially due to the Render free account policy.
 # Infolliom-Register-Page
 
-Infollion-Register-Page is a full-stack app that uses real-time OTP verification via email. It utilizes Nodemailer and Mailgen to accomplish this.
+~~Infollion-Register-Page is a full-stack app that uses real-time OTP verification via email. It utilizes Nodemailer and Mailgen to accomplish this.~~
+
+Infollion-Register-Page uses OTP verification. OTP will be last 6 digit of mobile number.
 
 ## Tech Stack
 
